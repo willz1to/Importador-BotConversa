@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Importador BotConversa — Importação & Exportação</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root {
+    --primary: #7A97AD;
+    --primary-dark: #5a7a8e;
+    --primary-light: #c5d6e0;
+    --accent: #F9A825;
+    --accent-dark: #e08f00;
+    --accent-light: #fef3cd;
+    --bg: #F4F7F9;
+    --white: #ffffff;
+    --card-border: #E0E6ED;
+    --title-color: #2C3E50;
+    --body-color: #757575;
+    --danger: #e74c3c;
+    --success: #27ae60;
+    --tag-bg: #eaf1f5;
+    --tag-color: #4a7a96;
+    --shadow: 0 2px 16px rgba(122,151,173,0.10);
+    --shadow-hover: 0 6px 28px rgba(122,151,173,0.18);
+    --radius: 12px;
+    --radius-pill: 999px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Montserrat', sans-serif;
+    background: var(--bg);
+    color: var(--title-color);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: var(--primary);
+    padding: 0 32px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 12px rgba(44,62,80,0.10);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header-logo {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .header-logo-icon {
+    width: 34px; height: 34px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .header-logo span {
+    font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -0.3px;
+  }
+  .header-logo small {
+    font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.65);
+    display: block; margin-top: -2px;
+  }
+  .header-actions { display: flex; align-items: center; gap: 10px; }
+
+  .btn-help {
+    background: rgba(255,255,255,0.15);
+    border: 1.5px solid rgba(255,255,255,0.3);
+    color: #fff;
+    border-radius: var(--radius-pill);
+    padding: 6px 16px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px; font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-help:hover { background: rgba(255,255,255,0.25); }
+
+  /* ===== MAIN ===== */
+  main {
+    flex: 1;
+    padding: 32px;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* ===== CARDS ===== */
+  .card {
+    background: var(--white);
+    border-radius: var(--radius);
+    border: 1.5px solid var(--card-border);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 18px 24px;
+    border-bottom: 1.5px solid var(--card-border);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+  }
+  .card-title {
+    font-size: 14px; font-weight: 700; color: var(--title-color);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-title .step-badge {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    font-size: 11px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .card-body { padding: 24px; }
+
+  /* ===== STEPS HEADER ===== */
+  .steps-bar {
+    display: flex; align-items: center; gap: 0;
+    background: var(--white);
+    border-radius: var(--radius);
+    border: 1.5px solid var(--card-border);
+    box-shadow: var(--shadow);
+    padding: 16px 28px;
+    overflow-x: auto;
+  }
+  .step-item {
+    display: flex; align-items: center; gap: 10px;
+    flex-shrink: 0;
+  }
+  .step-dot {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--card-border);
+    color: var(--body-color);
+    font-size: 12px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s;
+  }
+  .step-dot.active { background: var(--accent); color: #fff; }
+  .step-dot.done { background: var(--success); color: #fff; }
+  .step-label { font-size: 12px; font-weight: 600; color: var(--body-color); }
+  .step-label.active { color: var(--title-color); }
+  .step-label.done { color: var(--success); }
+  .step-sep {
+    width: 40px; height: 2px;
+    background: var(--card-border);
+    margin: 0 8px; flex-shrink: 0;
+    transition: background 0.3s;
+  }
+  .step-sep.done { background: var(--success); }
+
+  /* ===== BUTTONS ===== */
+  .btn {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px; font-weight: 700;
+    border-radius: var(--radius-pill);
+    border: none; cursor: pointer;
+    padding: 10px 22px;
+    display: inline-flex; align-items: center; gap: 7px;
+    transition: all 0.18s;
+    white-space: nowrap;
+  }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-accent {
+    background: var(--accent); color: #fff;
+    box-shadow: 0 2px 10px rgba(249,168,37,0.25);
+  }
+  .btn-accent:hover:not(:disabled) {
+    background: var(--accent-dark);
+    box-shadow: 0 4px 18px rgba(249,168,37,0.35);
+    transform: translateY(-1px);
+  }
+  .btn-primary {
+    background: var(--primary); color: #fff;
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+  }
+  .btn-ghost {
+    background: transparent;
+    border: 1.5px solid var(--card-border);
+    color: var(--body-color);
+  }
+  .btn-ghost:hover:not(:disabled) {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-sm { padding: 6px 14px; font-size: 11px; }
+
+  /* ===== IMPORT ZONE ===== */
+  .drop-zone {
+    border: 2.5px dashed var(--primary-light);
+    border-radius: var(--radius);
+    background: #f7fafc;
+    padding: 40px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--primary);
+    background: #eef4f8;
+  }
+  .drop-zone input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .drop-icon { font-size: 42px; margin-bottom: 12px; }
+  .drop-title { font-size: 15px; font-weight: 700; color: var(--title-color); margin-bottom: 4px; }
+  .drop-sub { font-size: 12px; color: var(--body-color); }
+  .drop-zone.has-file { border-style: solid; border-color: var(--success); background: #f0faf4; }
+  .file-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--success); color: #fff;
+    border-radius: var(--radius-pill);
+    padding: 6px 14px; font-size: 12px; font-weight: 600; margin-top: 12px;
+  }
+
+  /* ===== COLUMN MAPPER ===== */
+  .mapper-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  .mapper-item {
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .mapper-label {
+    font-size: 11px; font-weight: 700; color: var(--primary);
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  select.mapper-select, input.mapper-input {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px; font-weight: 500;
+    border: 1.5px solid var(--card-border);
+    border-radius: var(--radius-pill);
+    padding: 8px 14px;
+    background: var(--bg);
+    color: var(--title-color);
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+  }
+  select.mapper-select:focus, input.mapper-input:focus {
+    border-color: var(--primary);
+    background: #fff;
+  }
+  .select-wrapper { position: relative; }
+  .select-wrapper::after {
+    content: '▾';
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    color: var(--primary); font-size: 12px; pointer-events: none;
+  }
+
+  /* ===== TABLE ===== */
+  .table-container {
+    overflow-x: auto;
+    border-radius: var(--radius);
+    border: 1.5px solid var(--card-border);
+  }
+  .data-table {
+    width: 100%; border-collapse: collapse; min-width: 600px;
+  }
+  .data-table th {
+    background: var(--primary);
+    color: #fff;
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 12px 16px;
+    text-align: left; white-space: nowrap;
+    position: sticky; top: 0;
+  }
+  .data-table td {
+    padding: 10px 16px;
+    font-size: 12px; color: var(--title-color);
+    border-bottom: 1px solid var(--card-border);
+    vertical-align: middle;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: #f7fafc; }
+  .data-table tr.selected td { background: var(--accent-light); }
+
+  /* ===== TAG CELL ===== */
+  .tag-cell {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 5px;
+    min-height: 30px; cursor: pointer;
+  }
+  .tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--tag-bg);
+    color: var(--tag-color);
+    border-radius: var(--radius-pill);
+    padding: 3px 10px 3px 8px;
+    font-size: 11px; font-weight: 600;
+    transition: all 0.15s;
+  }
+  .tag:hover { background: var(--primary-light); }
+  .tag-remove {
+    background: none; border: none; cursor: pointer;
+    color: var(--primary); font-size: 13px; line-height: 1;
+    padding: 0 0 0 2px; display: flex; align-items: center;
+    transition: color 0.15s;
+  }
+  .tag-remove:hover { color: var(--danger); }
+  .tag-add {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--accent);
+    border: none; cursor: pointer; color: #fff;
+    font-size: 16px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; flex-shrink: 0;
+    line-height: 1;
+  }
+  .tag-add:hover { background: var(--accent-dark); transform: scale(1.1); }
+
+  /* ===== TAG INPUT POPUP ===== */
+  .tag-popup {
+    position: fixed; z-index: 500;
+    background: var(--white);
+    border: 1.5px solid var(--card-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-hover);
+    padding: 14px;
+    min-width: 280px;
+    display: none;
+  }
+  .tag-popup.open { display: block; animation: popIn 0.15s ease; }
+  @keyframes popIn {
+    from { opacity: 0; transform: translateY(6px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .tag-popup-title {
+    font-size: 11px; font-weight: 700; color: var(--primary);
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;
+  }
+  .tag-input-row {
+    display: flex; gap: 6px; margin-bottom: 10px;
+  }
+  .tag-input-row input {
+    flex: 1;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    border: 1.5px solid var(--card-border);
+    border-radius: var(--radius-pill);
+    padding: 7px 12px;
+    outline: none;
+  }
+  .tag-input-row input:focus { border-color: var(--primary); }
+  .tag-popup-actions {
+    display: flex; gap: 6px; flex-wrap: wrap;
+  }
+
+  /* ===== TOOLBAR ===== */
+  .toolbar {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .search-input {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px; font-weight: 500;
+    border: 1.5px solid var(--card-border);
+    border-radius: var(--radius-pill);
+    padding: 8px 16px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 220px;
+    background: var(--bg);
+    color: var(--title-color);
+  }
+  .search-input:focus { border-color: var(--primary); background: #fff; }
+  .info-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--tag-bg);
+    color: var(--tag-color);
+    border-radius: var(--radius-pill);
+    padding: 5px 13px;
+    font-size: 11px; font-weight: 700;
+  }
+
+  /* ===== TOAST ===== */
+  .toast-container {
+    position: fixed; bottom: 28px; right: 28px; z-index: 999;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .toast {
+    background: var(--title-color);
+    color: #fff;
+    border-radius: var(--radius);
+    padding: 12px 18px;
+    font-size: 13px; font-weight: 600;
+    box-shadow: var(--shadow-hover);
+    animation: slideIn 0.25s ease;
+    display: flex; align-items: center; gap: 8px;
+    max-width: 320px;
+  }
+  .toast.success { background: var(--success); }
+  .toast.error { background: var(--danger); }
+  .toast.info { background: var(--primary); }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(44,62,80,0.45);
+    z-index: 800; display: none; align-items: center; justify-content: center;
+    backdrop-filter: blur(2px);
+  }
+  .modal-overlay.open { display: flex; animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: 0 20px 60px rgba(44,62,80,0.25);
+    width: 90%; max-width: 560px;
+    max-height: 85vh;
+    overflow-y: auto;
+    animation: modalIn 0.2s ease;
+  }
+  @keyframes modalIn {
+    from { transform: translateY(20px) scale(0.97); opacity: 0; }
+    to   { transform: translateY(0) scale(1); opacity: 1; }
+  }
+  .modal-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1.5px solid var(--card-border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .modal-title { font-size: 16px; font-weight: 800; color: var(--title-color); }
+  .modal-close {
+    background: none; border: none; cursor: pointer;
+    font-size: 20px; color: var(--body-color);
+    line-height: 1; padding: 4px;
+  }
+  .modal-close:hover { color: var(--danger); }
+  .modal-body { padding: 24px; }
+
+  /* ===== HELP CONTENT ===== */
+  .help-section { margin-bottom: 20px; }
+  .help-section h3 {
+    font-size: 12px; font-weight: 800; color: var(--accent-dark);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .help-section p, .help-section li {
+    font-size: 13px; color: var(--body-color); line-height: 1.7;
+  }
+  .help-section ul { padding-left: 18px; }
+  .help-key {
+    display: inline-block;
+    background: var(--bg); border: 1.5px solid var(--card-border);
+    border-radius: 5px; padding: 1px 7px;
+    font-size: 11px; font-weight: 700; color: var(--title-color);
+    font-family: monospace;
+  }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--primary);
+    color: rgba(255,255,255,0.7);
+    text-align: center;
+    padding: 14px 32px;
+    font-size: 11px; font-weight: 500;
+  }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state {
+    text-align: center; padding: 48px 24px; color: var(--body-color);
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; color: var(--title-color); }
+  .empty-sub { font-size: 12px; }
+
+  /* ===== DIVIDER ===== */
+  .divider {
+    height: 1px; background: var(--card-border); margin: 16px 0;
+  }
+
+  /* ===== SECTION TITLE ===== */
+  .section-tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--accent-light);
+    color: var(--accent-dark);
+    border-radius: var(--radius-pill);
+    padding: 3px 10px;
+    font-size: 10px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+
+  /* ===== PROGRESS ===== */
+  .progress-bar-wrap {
+    background: var(--card-border);
+    border-radius: var(--radius-pill);
+    height: 6px; overflow: hidden; margin-top: 8px;
+  }
+  .progress-bar-fill {
+    height: 100%; background: var(--accent);
+    border-radius: var(--radius-pill);
+    transition: width 0.4s ease;
+  }
+
+  /* ===== WELCOME SCREEN ===== */
+  .welcome-overlay {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    z-index: 900;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .welcome-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    border: 1.5px solid var(--card-border);
+    box-shadow: 0 20px 60px rgba(122,151,173,0.18);
+    max-width: 500px; width: 100%;
+    overflow: hidden;
+    animation: modalIn 0.3s ease;
+  }
+  .welcome-header {
+    background: var(--primary);
+    padding: 32px 36px 24px;
+    text-align: center;
+  }
+  .welcome-logo-icon {
+    width: 56px; height: 56px;
+    background: var(--accent);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    margin: 0 auto 16px;
+  }
+  .welcome-title {
+    font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 4px;
+  }
+  .welcome-sub {
+    font-size: 12px; color: rgba(255,255,255,0.7); font-weight: 500;
+  }
+  .welcome-body { padding: 28px 36px; }
+  .welcome-desc {
+    font-size: 13px; color: var(--body-color); line-height: 1.7;
+    margin-bottom: 20px; text-align: center;
+  }
+  .welcome-features {
+    display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px;
+  }
+  .welcome-feature {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 12px; color: var(--title-color); font-weight: 500;
+  }
+  .welcome-feature-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--accent-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .welcome-contact {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 11px; color: var(--body-color);
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 20px;
+  }
+  .welcome-contact a {
+    color: var(--primary-dark); font-weight: 700; text-decoration: none;
+  }
+  .welcome-contact a:hover { text-decoration: underline; }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 640px) {
+    main { padding: 16px; }
+    .card-body { padding: 16px; }
+    .steps-bar { padding: 12px 16px; }
+  }
+
+  /* ===== EDITABLE CELL ===== */
+  .cell-editable {
+    outline: none;
+    border-radius: 4px;
+    padding: 2px 4px;
+    transition: background 0.15s;
+  }
+  .cell-editable:focus {
+    background: var(--accent-light);
+    outline: 2px solid var(--accent);
+  }
+
+  /* ===== SCROLLABLE TABLE WRAP ===== */
+  .table-wrap {
+    max-height: 440px;
+    overflow-y: auto;
+    border-radius: var(--radius);
+    border: 1.5px solid var(--card-border);
+  }
+  .table-wrap .data-table th { position: sticky; top: 0; z-index: 2; }
+
+  /* ===== ROW INDEX ===== */
+  .row-num {
+    color: var(--body-color); font-size: 11px; font-weight: 500;
+    user-select: none; width: 36px; text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<!-- WELCOME SCREEN -->
+<div class="welcome-overlay" id="welcomeOverlay">
+  <div class="welcome-card">
+    <div class="welcome-header">
+      <div class="welcome-logo-icon">⚡</div>
+      <div class="welcome-title">Importador BotConversa</div>
+      <div class="welcome-sub">Ferramenta de Importação & Exportação</div>
+    </div>
+    <div class="welcome-body">
+      <p class="welcome-desc">
+        Importe qualquer relatório em planilha, trate os dados, edite as etiquetas e exporte no formato pronto para o <strong>BotConversa</strong> — tudo no seu navegador, sem instalar nada.
+      </p>
+      <div class="welcome-features">
+        <div class="welcome-feature">
+          <div class="welcome-feature-icon">📂</div>
+          <span>Importe relatórios em <strong>.xlsx, .xls ou .csv</strong></span>
+        </div>
+        <div class="welcome-feature">
+          <div class="welcome-feature-icon">🗂</div>
+          <span>Mapeie as colunas de <strong>qualquer formato</strong> de planilha</span>
+        </div>
+        <div class="welcome-feature">
+          <div class="welcome-feature-icon">✏</div>
+          <span>Edite as etiquetas antes de exportar</span>
+        </div>
+        <div class="welcome-feature">
+          <div class="welcome-feature-icon">📤</div>
+          <span>Exporte pronto para importar no <strong>BotConversa</strong></span>
+        </div>
+      </div>
+      <div class="welcome-contact">
+        <span>💬</span>
+        <span>Suporte: <a href="mailto:william.26@hotmail.com" style="font-weight:700;color:var(--primary-dark);text-decoration:none;">William Luiz de Souza</a></span>
+      </div>
+      <button class="btn btn-accent" style="width:100%;justify-content:center;font-size:14px;padding:13px;" onclick="closeWelcome()">
+        Começar →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-logo">
+    <div class="header-logo-icon">⚡</div>
+    <div>
+      <span>Importador BotConversa</span>
+      <small>Importação & Exportação</small>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="btn-help" onclick="openHelp()">
+      <span>?</span> Ajuda
+    </button>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main>
+
+  <!-- STEPS BAR -->
+  <div class="steps-bar">
+    <div class="step-item">
+      <div class="step-dot active" id="step-dot-1">1</div>
+      <span class="step-label active" id="step-label-1">Importar arquivo</span>
+    </div>
+    <div class="step-sep" id="step-sep-1"></div>
+    <div class="step-item">
+      <div class="step-dot" id="step-dot-2">2</div>
+      <span class="step-label" id="step-label-2">Mapear colunas</span>
+    </div>
+    <div class="step-sep" id="step-sep-2"></div>
+    <div class="step-item">
+      <div class="step-dot" id="step-dot-3">3</div>
+      <span class="step-label" id="step-label-3">Revisar & Editar</span>
+    </div>
+    <div class="step-sep" id="step-sep-3"></div>
+    <div class="step-item">
+      <div class="step-dot" id="step-dot-4">4</div>
+      <span class="step-label" id="step-label-4">Exportar</span>
+    </div>
+  </div>
+
+  <!-- ===== STEP 1: IMPORTAR ===== -->
+  <div class="card" id="panel-import">
+    <div class="card-header">
+      <div class="card-title">
+        <div class="step-badge">1</div>
+        Importar Arquivo
+      </div>
+      <span class="section-tag">📂 Upload</span>
+    </div>
+    <div class="card-body">
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" onchange="handleFileSelect(event)">
+        <div class="drop-icon">📊</div>
+        <div class="drop-title">Arraste o arquivo aqui ou clique para selecionar</div>
+        <div class="drop-sub">Suporta: .xlsx, .xls, .csv</div>
+        <div id="fileBadge"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== STEP 2: MAPEAR COLUNAS ===== -->
+  <div class="card" id="panel-mapper" style="display:none">
+    <div class="card-header">
+      <div class="card-title">
+        <div class="step-badge">2</div>
+        Mapear Colunas
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span class="section-tag">🗂 Configuração</span>
+        <button class="btn btn-ghost btn-sm" onclick="applyPortalPreset()" title="Limpar todas as seleções">↺ Limpar Seleção</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <p style="font-size:12px;color:var(--body-color);margin-bottom:16px;">
+        Selecione qual coluna do arquivo corresponde a cada campo. <strong>Nome</strong> e <strong>Telefone</strong> são obrigatórios — <strong>Etiquetas</strong> é opcional. Use <strong>Limpar Seleção</strong> para reiniciar todas as escolhas.
+      </p>
+      <div class="mapper-grid" id="mapperGrid">
+        <!-- Dinâmico -->
+      </div>
+      <div class="divider"></div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;">
+        <button class="btn btn-ghost" onclick="resetStep1()">← Voltar</button>
+        <button class="btn btn-accent" onclick="applyMapping()" id="btnApplyMap">Aplicar Mapeamento →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== STEP 3: REVISAR & EDITAR ===== -->
+  <div class="card" id="panel-review" style="display:none">
+    <div class="card-header">
+      <div class="card-title">
+        <div class="step-badge">3</div>
+        Revisar & Editar Etiquetas
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <span id="recordCount" class="info-pill">0 registros</span>
+        <input class="search-input" type="text" placeholder="🔍 Buscar..." id="searchInput" oninput="filterTable()">
+        <button class="btn btn-ghost btn-sm" onclick="openTagManager()" style="border-color:var(--danger);color:var(--danger);">🗑 Gerenciar Etiquetas</button>
+        <button class="btn btn-ghost btn-sm" onclick="resetStep1()">↩ Reimportar</button>
+      </div>
+    </div>
+    <div class="card-body" style="padding:0">
+      <div style="padding:12px 24px;background:#f7fafc;border-bottom:1px solid var(--card-border);font-size:11px;color:var(--body-color);display:flex;gap:20px;flex-wrap:wrap;">
+        <span>💡 <strong>Etiquetas:</strong> Clique no <strong>+</strong> para adicionar · Clique no <strong>×</strong> para remover · Duplo clique na etiqueta para renomear</span>
+        <span><span class="help-key">Delete</span> na célula seleciona limpa todas as etiquetas da linha</span>
+      </div>
+      <div class="table-wrap" id="tableWrap">
+        <table class="data-table" id="dataTable">
+          <thead id="tableHead"></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div style="padding:16px 24px;border-top:1.5px solid var(--card-border);display:flex;justify-content:flex-end;gap:10px;">
+      <button class="btn btn-ghost" onclick="resetStep1()">← Voltar</button>
+      <button class="btn btn-accent" onclick="goToExport()">Ir para Exportação →</button>
+    </div>
+  </div>
+
+  <!-- ===== STEP 4: EXPORTAR ===== -->
+  <div class="card" id="panel-export" style="display:none">
+    <div class="card-header">
+      <div class="card-title">
+        <div class="step-badge">4</div>
+        Exportar — Modelo BotConversa
+      </div>
+      <span class="section-tag">📤 Exportação</span>
+    </div>
+    <div class="card-body">
+      <p style="font-size:12px;color:var(--body-color);margin-bottom:16px;">
+        O arquivo será gerado no formato BotConversa: <strong>Primeiro Nome · Sobrenome · Telefone · Etiquetas</strong>.
+        Telefones múltiplos (separados por <code style="background:var(--bg);padding:1px 5px;border-radius:4px;">/</code>) geram linhas individuais.
+      </p>
+
+      <div id="exportPreview"></div>
+
+      <div class="divider"></div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;align-items:center;">
+        <button class="btn btn-ghost" onclick="backToReview()">← Voltar para Edição</button>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-primary" onclick="exportFile('xlsx')">⬇ Baixar .xlsx</button>
+          <button class="btn btn-accent" onclick="exportFile('csv')">⬇ Baixar .csv</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  Importador BotConversa v2.0 · Dados processados localmente no seu navegador &nbsp;|&nbsp; Suporte: <a href="mailto:william.26@hotmail.com" style="color:rgba(255,255,255,0.85);font-weight:600;text-decoration:none;">William Luiz de Souza</a>
+</footer>
+
+<!-- TAG POPUP -->
+<div class="tag-popup" id="tagPopup">
+  <div class="tag-popup-title">✏ Adicionar / Editar Etiqueta</div>
+  <div class="tag-input-row">
+    <input type="text" id="tagInput" placeholder="Nome da etiqueta..." onkeydown="tagInputKeyDown(event)">
+    <button class="btn btn-accent btn-sm" onclick="confirmTag()">+ Add</button>
+  </div>
+  <div style="font-size:11px;color:var(--body-color);margin-bottom:8px;">Aplicar:</div>
+  <div class="tag-popup-actions">
+    <button class="btn btn-primary btn-sm" onclick="applyTagToRow()">Somente esta linha</button>
+    <button class="btn btn-ghost btn-sm" onclick="applyTagToAll()">Todas as linhas</button>
+    <button class="btn btn-ghost btn-sm" style="margin-left:auto;" onclick="closeTagPopup()">Cancelar</button>
+  </div>
+</div>
+
+<!-- HELP MODAL -->
+<div class="modal-overlay" id="helpModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">📖 Como usar o Importador BotConversa</div>
+      <button class="modal-close" onclick="closeHelp()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="help-section">
+        <h3>📂 1. Importar arquivo</h3>
+        <p>Arraste um arquivo <strong>.xlsx, .xls ou .csv</strong> para a área de upload, ou clique para selecionar. O arquivo é lido diretamente no seu navegador — nenhum dado é enviado para a internet.</p>
+      </div>
+      <div class="help-section">
+        <h3>🗂 2. Mapear colunas</h3>
+        <ul>
+          <li>Selecione qual coluna do arquivo corresponde a <strong>Nome</strong>, <strong>Telefone</strong> e (opcionalmente) <strong>Etiquetas</strong>.</li>
+          <li><strong>Nome</strong> e <strong>Telefone</strong> são obrigatórios — sem eles não é possível prosseguir.</li>
+          <li><strong>Etiquetas</strong> é opcional. Mesmo sem mapear, a coluna estará disponível na etapa 3 para preenchimento manual.</li>
+          <li>Use o botão <strong>"Limpar Seleção"</strong> para reiniciar todos os campos e começar do zero.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h3>✏ 3. Editar etiquetas</h3>
+        <ul>
+          <li>Clique no <strong>+</strong> ao lado das etiquetas para adicionar uma nova.</li>
+          <li>Escolha aplicar <strong>somente na linha</strong> ou em <strong>todas as linhas</strong>.</li>
+          <li>Clique no <strong>×</strong> de uma etiqueta para removê-la.</li>
+          <li>Duplo clique em uma etiqueta existente para <strong>renomeá-la</strong>.</li>
+          <li>Pressione <span class="help-key">Delete</span> em qualquer célula de etiqueta para limpar todas as etiquetas daquela linha.</li>
+          <li>Use a barra de busca para filtrar registros por nome ou etiqueta.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h3>📤 4. Exportar</h3>
+        <ul>
+          <li>O arquivo é gerado no formato BotConversa: <strong>Primeiro Nome · Sobrenome · Telefone · Etiquetas</strong>.</li>
+          <li>Telefones múltiplos separados por <span class="help-key">/</span> geram linhas individuais.</li>
+          <li>Etiquetas múltiplas ficam na mesma célula separadas por <strong>, </strong> (vírgula + espaço).</li>
+          <li>Baixe como <strong>.xlsx</strong> ou <strong>.csv</strong>.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <h3>🗑 Gerenciar Etiquetas Globais</h3>
+        <ul>
+          <li>Clique em <strong>"Gerenciar Etiquetas"</strong> na toolbar da etapa 3 para abrir o painel.</li>
+          <li><strong>Remover etiqueta específica:</strong> selecione pelo dropdown (lista todas as etiquetas em uso) ou digite o nome manualmente e clique em "Remover de todos" — a etiqueta é removida de cada linha que a continha.</li>
+          <li><strong>Limpar tudo:</strong> apaga todas as etiquetas de todos os registros de uma vez. Uma confirmação é solicitada antes de executar.</li>
+        </ul>
+      </div>
+      <div class="help-section" style="margin-bottom:0">
+        <h3>💬 Suporte</h3>
+        <p>Dúvidas ou problemas? Fale com <a href="mailto:william.26@hotmail.com" style="color:var(--primary-dark);font-weight:700;text-decoration:none;">William Luiz de Souza</a>.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAG MANAGER MODAL -->
+<div class="modal-overlay" id="tagManagerModal">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-header">
+      <div class="modal-title">🗑 Gerenciar Etiquetas Globais</div>
+      <button class="modal-close" onclick="closeTagManager()">×</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Remover etiqueta específica -->
+      <div class="help-section" style="margin-bottom:0">
+        <h3>✂ Remover etiqueta específica de todas as linhas</h3>
+      </div>
+      <p style="font-size:12px;color:var(--body-color);margin:8px 0 12px;">Selecione uma etiqueta existente ou digite o nome exato para removê-la de todos os registros.</p>
+      <div style="display:flex;gap:8px;margin-bottom:6px;">
+        <div class="select-wrapper" style="flex:1">
+          <select class="mapper-select" id="tagManagerSelect" onchange="syncTagManagerInput()">
+            <option value="">— Selecione uma etiqueta —</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:16px;">
+        <input class="search-input" type="text" id="tagManagerInput" placeholder="Ou digite o nome exato..." style="flex:1;width:auto;" oninput="syncTagManagerSelect()">
+        <button class="btn btn-danger btn-sm" onclick="removeSpecificTagFromAll()">Remover de todos</button>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Limpar tudo -->
+      <div class="help-section" style="margin-bottom:8px;margin-top:16px;">
+        <h3>🧹 Limpar todas as etiquetas de todos os registros</h3>
+      </div>
+      <p style="font-size:12px;color:var(--body-color);margin-bottom:14px;">Remove <strong>todas</strong> as etiquetas de <strong>todos</strong> os registros de uma vez. Esta ação não pode ser desfeita.</p>
+      <button class="btn btn-danger" style="width:100%;" onclick="clearAllTagsGlobal()">⚠ Limpar tudo</button>
+
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let rawHeaders = [];
+let rawRows = [];
+let tableData = []; // [{nome, telefone, tags:[]}]
+let filteredIndices = [];
+let currentTagRowIndex = null;
+let lastFileName = 'arquivo';
+let mappedEtiquetaLabel = ''; // nome da coluna de etiquetas mapeada (ou vazio)
+
+// ============================================================
+// STEP MANAGEMENT
+// ============================================================
+function setStep(n) {
+  for (let i = 1; i <= 4; i++) {
+    const dot = document.getElementById(`step-dot-${i}`);
+    const lbl = document.getElementById(`step-label-${i}`);
+    const sep = document.getElementById(`step-sep-${i}`);
+    dot.classList.remove('active','done');
+    lbl.classList.remove('active','done');
+    if (sep) sep.classList.remove('done');
+    if (i < n) { dot.classList.add('done'); lbl.classList.add('done'); dot.textContent = '✓'; if (sep) sep.classList.add('done'); }
+    else if (i === n) { dot.classList.add('active'); lbl.classList.add('active'); dot.textContent = i; }
+    else { dot.textContent = i; }
+  }
+}
+
+function resetStep1() {
+  rawHeaders = []; rawRows = []; tableData = []; filteredIndices = [];
+  document.getElementById('fileInput').value = '';
+  document.getElementById('fileBadge').innerHTML = '';
+  const dz = document.getElementById('dropZone');
+  dz.classList.remove('has-file');
+  show('panel-import'); hide('panel-mapper'); hide('panel-review'); hide('panel-export');
+  setStep(1);
+}
+
+function show(id) { document.getElementById(id).style.display = 'block'; }
+function hide(id) { document.getElementById(id).style.display = 'none'; }
+
+// ============================================================
+// FILE HANDLING
+// ============================================================
+const dropZone = document.getElementById('dropZone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) processFile(file);
+});
+
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (file) processFile(file);
+}
+
+function processFile(file) {
+  lastFileName = file.name.replace(/\.[^.]+$/, '');
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (!['xlsx','xls','csv'].includes(ext)) {
+    toast('Formato não suportado. Use .xlsx, .xls ou .csv', 'error'); return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const json = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+      if (!json.length) { toast('Arquivo vazio ou inválido', 'error'); return; }
+
+      rawHeaders = json[0].map(h => String(h).trim());
+      rawRows = json.slice(1).filter(r => r.some(c => c !== ''));
+
+      // Show file badge
+      const dz = document.getElementById('dropZone');
+      dz.classList.add('has-file');
+      document.getElementById('fileBadge').innerHTML =
+        `<div class="file-badge">✓ ${file.name} · ${rawRows.length} linhas</div>`;
+
+      // Build mapper
+      buildMapper();
+      hide('panel-import'); show('panel-mapper');
+      setStep(2);
+      toast(`Arquivo carregado: ${rawRows.length} registros`, 'success');
+    } catch(err) {
+      toast('Erro ao ler o arquivo: ' + err.message, 'error');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ============================================================
+// COLUMN MAPPER
+// ============================================================
+const FIELD_DEFS = [
+  { key: 'nome',      label: 'Nome completo',       required: true },
+  { key: 'telefone',  label: 'Telefone / Celular',   required: true },
+  { key: 'categoria', label: 'Categoria (etiquetas)',required: false, hint: 'Vira etiqueta inicial' },
+];
+
+function buildMapper() {
+  const grid = document.getElementById('mapperGrid');
+  grid.innerHTML = '';
+  const opts = ['— Não mapear —', ...rawHeaders];
+
+  FIELD_DEFS.forEach(f => {
+    const item = document.createElement('div');
+    item.className = 'mapper-item';
+    const req = f.required ? ' <span style="color:var(--danger)">*</span>' : '';
+    const hint = f.hint ? `<div style="font-size:10px;color:var(--body-color);margin-top:2px;">${f.hint}</div>` : '';
+    item.innerHTML = `
+      <label class="mapper-label">${f.label}${req}</label>
+      <div class="select-wrapper">
+        <select class="mapper-select" id="map_${f.key}">
+          ${opts.map(o => `<option value="${o}">${o}</option>`).join('')}
+        </select>
+      </div>${hint}
+    `;
+    grid.appendChild(item);
+  });
+
+  // All selectors start blank — user must choose manually
+}
+
+function applyPortalPreset() {
+  // Reset all selectors to blank
+  FIELD_DEFS.forEach(f => {
+    const sel = document.getElementById(`map_${f.key}`);
+    if (sel) sel.value = '— Não mapear —';
+  });
+  toast('Seleções limpas. Escolha as colunas manualmente.', 'info');
+}
+
+function applyMapping() {
+  const nomeCol = document.getElementById('map_nome').value;
+  const telCol  = document.getElementById('map_telefone').value;
+  const catCol  = document.getElementById('map_categoria')?.value;
+
+  if (nomeCol === '— Não mapear —' || telCol === '— Não mapear —') {
+    toast('Nome e Telefone são obrigatórios', 'error'); return;
+  }
+
+  const nI = rawHeaders.indexOf(nomeCol);
+  const tI = rawHeaders.indexOf(telCol);
+  const cI = catCol && catCol !== '— Não mapear —' ? rawHeaders.indexOf(catCol) : -1;
+
+  // Save the label of the mapped etiqueta column (or empty string if not mapped)
+  mappedEtiquetaLabel = cI >= 0 ? catCol : '';
+
+  tableData = rawRows.map(row => {
+    const cat = cI >= 0 ? String(row[cI] || '').trim() : '';
+    return {
+      nome: String(row[nI] || '').trim(),
+      telefone: String(row[tI] || '').trim(),
+      tags: cat ? [cat] : [],
+    };
+  }).filter(r => r.nome);
+
+  filteredIndices = tableData.map((_,i) => i);
+  renderTable();
+  hide('panel-mapper'); show('panel-review');
+  document.getElementById('recordCount').textContent = `${tableData.length} registros`;
+  setStep(3);
+  toast(`${tableData.length} registros carregados`, 'success');
+}
+
+// ============================================================
+// TABLE RENDER
+// ============================================================
+function renderTable() {
+  const thead = document.getElementById('tableHead');
+  const tbody = document.getElementById('tableBody');
+
+  const etiquetaHeader = mappedEtiquetaLabel || 'Etiquetas';
+
+  thead.innerHTML = `<tr>
+    <th class="row-num">#</th>
+    <th>Nome</th>
+    <th>Telefone</th>
+    <th>${esc(etiquetaHeader)}</th>
+  </tr>`;
+
+  tbody.innerHTML = '';
+
+  filteredIndices.forEach((realIdx) => {
+    const row = tableData[realIdx];
+    const tr = document.createElement('tr');
+    tr.dataset.idx = realIdx;
+
+    tr.innerHTML = `
+      <td class="row-num">${realIdx + 1}</td>
+      <td><span class="cell-editable" contenteditable="true"
+          onblur="saveCell(${realIdx},'nome',this)"
+          onkeydown="cellKeyDown(event)">${esc(row.nome)}</span></td>
+      <td><span class="cell-editable" contenteditable="true"
+          onblur="saveCell(${realIdx},'telefone',this)"
+          onkeydown="cellKeyDown(event)">${esc(row.telefone)}</span></td>
+      <td tabindex="0"
+          onkeydown="tagCellKeyDown(event, ${realIdx})"
+          onfocus="tagCellFocus(this)"
+          onblur="tagCellBlur(this)"
+          id="tagcell-${realIdx}">
+        ${renderTags(realIdx)}
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderTags(realIdx) {
+  const row = tableData[realIdx];
+  let html = '<div class="tag-cell">';
+  row.tags.forEach((tag, ti) => {
+    html += `<span class="tag"
+      ondblclick="editTagInline(${realIdx}, ${ti}, this)"
+      >${esc(tag)}<button class="tag-remove" onclick="removeTag(${realIdx},${ti},event)" title="Remover">×</button></span>`;
+  });
+  html += `<button class="tag-add" onclick="openTagPopup(event, ${realIdx})" title="Adicionar etiqueta">+</button>`;
+  html += '</div>';
+  return html;
+}
+
+function refreshTagCell(realIdx) {
+  const cell = document.getElementById(`tagcell-${realIdx}`);
+  if (cell) cell.innerHTML = renderTags(realIdx);
+}
+
+function saveCell(idx, field, el) {
+  tableData[idx][field] = el.textContent.trim();
+}
+
+function cellKeyDown(e) {
+  if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); }
+}
+
+function tagCellFocus(td) { td.closest('tr').classList.add('selected'); }
+function tagCellBlur(td) { td.closest('tr').classList.remove('selected'); }
+
+function tagCellKeyDown(e, realIdx) {
+  if (e.key === 'Delete') {
+    tableData[realIdx].tags = [];
+    refreshTagCell(realIdx);
+    toast('Etiquetas removidas', 'info');
+  }
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ============================================================
+// SEARCH / FILTER
+// ============================================================
+function filterTable() {
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  if (!q) {
+    filteredIndices = tableData.map((_,i) => i);
+  } else {
+    filteredIndices = tableData.reduce((acc, row, i) => {
+      const str = [row.nome, row.telefone, row.categoria, row.tags.join(' ')].join(' ').toLowerCase();
+      if (str.includes(q)) acc.push(i);
+      return acc;
+    }, []);
+  }
+  renderTable();
+  document.getElementById('recordCount').textContent = `${filteredIndices.length} / ${tableData.length} registros`;
+}
+
+// ============================================================
+// TAG POPUP
+// ============================================================
+function openTagPopup(e, realIdx) {
+  e.stopPropagation();
+  currentTagRowIndex = realIdx;
+  const popup = document.getElementById('tagPopup');
+  const btn = e.target;
+  const rect = btn.getBoundingClientRect();
+  popup.style.top = (rect.bottom + window.scrollY + 6) + 'px';
+  popup.style.left = Math.min(rect.left + window.scrollX, window.innerWidth - 300) + 'px';
+  popup.classList.add('open');
+  document.getElementById('tagInput').value = '';
+  setTimeout(() => document.getElementById('tagInput').focus(), 50);
+}
+
+function closeTagPopup() {
+  document.getElementById('tagPopup').classList.remove('open');
+  currentTagRowIndex = null;
+}
+
+function tagInputKeyDown(e) {
+  if (e.key === 'Enter') { e.preventDefault(); applyTagToRow(); }
+  if (e.key === 'Escape') closeTagPopup();
+}
+
+function getTagInputValue() {
+  return document.getElementById('tagInput').value.trim();
+}
+
+function confirmTag() { applyTagToRow(); }
+
+function applyTagToRow() {
+  const val = getTagInputValue();
+  if (!val) { toast('Digite uma etiqueta', 'error'); return; }
+  if (currentTagRowIndex === null) return;
+  if (!tableData[currentTagRowIndex].tags.includes(val)) {
+    tableData[currentTagRowIndex].tags.push(val);
+    refreshTagCell(currentTagRowIndex);
+  }
+  closeTagPopup();
+}
+
+function applyTagToAll() {
+  const val = getTagInputValue();
+  if (!val) { toast('Digite uma etiqueta', 'error'); return; }
+  let count = 0;
+  tableData.forEach((row, i) => {
+    if (!row.tags.includes(val)) { row.tags.push(val); count++; }
+  });
+  filteredIndices.forEach(i => refreshTagCell(i));
+  closeTagPopup();
+  toast(`Etiqueta "${val}" adicionada em ${count} linhas`, 'success');
+}
+
+function removeTag(realIdx, tagIdx, e) {
+  e.stopPropagation();
+  tableData[realIdx].tags.splice(tagIdx, 1);
+  refreshTagCell(realIdx);
+}
+
+function editTagInline(realIdx, tagIdx, el) {
+  const oldVal = tableData[realIdx].tags[tagIdx];
+  const input = document.createElement('input');
+  input.value = oldVal;
+  input.style.cssText = 'font-family:Montserrat,sans-serif;font-size:11px;font-weight:600;border:1.5px solid var(--accent);border-radius:12px;padding:2px 8px;width:max-content;min-width:60px;outline:none;';
+  el.replaceWith(input);
+  input.focus(); input.select();
+  const commit = () => {
+    const nv = input.value.trim();
+    if (nv) tableData[realIdx].tags[tagIdx] = nv;
+    else tableData[realIdx].tags.splice(tagIdx, 1);
+    refreshTagCell(realIdx);
+  };
+  input.onblur = commit;
+  input.onkeydown = e => { if (e.key==='Enter') { e.preventDefault(); commit(); } if (e.key==='Escape') refreshTagCell(realIdx); };
+}
+
+// Close popup on outside click
+document.addEventListener('click', e => {
+  const popup = document.getElementById('tagPopup');
+  if (popup.classList.contains('open') && !popup.contains(e.target)) closeTagPopup();
+});
+
+// ============================================================
+// EXPORT
+// ============================================================
+function goToExport() {
+  hide('panel-review'); show('panel-export');
+  setStep(4);
+  buildExportPreview();
+}
+
+function backToReview() {
+  hide('panel-export'); show('panel-review');
+  setStep(3);
+}
+
+function buildExportData() {
+  const out = [];
+  tableData.forEach(row => {
+    if (!row.nome) return;
+    const phones = row.telefone.split('/').map(p => cleanPhone(p.trim())).filter(Boolean);
+    const phones2 = phones.length ? phones : [''];
+    const tags = row.tags.join(' , ');
+    phones2.forEach(ph => {
+      const parts = row.nome.trim().split(/\s+/);
+      out.push({
+        'Primeiro Nome': parts[0] || '',
+        'Sobrenome': parts.slice(1).join(' '),
+        'Telefone': ph,
+        'Etiquetas': tags,
+      });
+    });
+  });
+  return out;
+}
+
+function cleanPhone(tel) {
+  return tel.replace(/\D/g, '');
+}
+
+function buildExportPreview() {
+  const data = buildExportData();
+  const preview = document.getElementById('exportPreview');
+
+  const sample = data.slice(0, 5);
+  let html = `
+    <div style="margin-bottom:12px;">
+      <span class="info-pill">${data.length} linhas no arquivo exportado</span>
+      ${data.length > 5 ? `<span style="font-size:11px;color:var(--body-color);margin-left:8px;">Prévia dos primeiros 5 registros</span>` : ''}
+    </div>
+    <div class="table-container">
+    <table class="data-table">
+      <thead><tr>
+        <th>Primeiro Nome</th><th>Sobrenome</th><th>Telefone</th><th>Etiquetas</th>
+      </tr></thead>
+      <tbody>
+  `;
+  sample.forEach(r => {
+    html += `<tr>
+      <td>${esc(r['Primeiro Nome'])}</td>
+      <td>${esc(r['Sobrenome'])}</td>
+      <td><code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:11px;">${esc(r['Telefone'])}</code></td>
+      <td>${r['Etiquetas'] ? `<span class="tag">${esc(r['Etiquetas'])}</span>` : '<span style="color:var(--body-color);font-size:11px;">—</span>'}</td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  preview.innerHTML = html;
+}
+
+function exportFile(format) {
+  const data = buildExportData();
+  if (!data.length) { toast('Nenhum dado para exportar', 'error'); return; }
+
+  const fileName = `Exportado_BotConversa_${lastFileName}`;
+
+  if (format === 'xlsx') {
+    const ws = XLSX.utils.json_to_sheet(data);
+    // Force phone column as text
+    const range = XLSX.utils.decode_range(ws['!ref']);
+    for (let R = range.s.r + 1; R <= range.e.r; R++) {
+      const addr = XLSX.utils.encode_cell({ r: R, c: 2 });
+      if (ws[addr]) { ws[addr].t = 's'; }
+    }
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'BotConversa');
+    XLSX.writeFile(wb, `${fileName}.xlsx`);
+    toast('Arquivo .xlsx baixado com sucesso!', 'success');
+  } else {
+    const headers = ['Primeiro Nome','Sobrenome','Telefone','Etiquetas'];
+    const csvRows = [headers.join(';')];
+    data.forEach(r => {
+      csvRows.push(headers.map(h => `"${String(r[h]||'').replace(/"/g,'""')}"`).join(';'));
+    });
+    const blob = new Blob(['\uFEFF' + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `${fileName}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+    toast('Arquivo .csv baixado com sucesso!', 'success');
+  }
+}
+
+// ============================================================
+// TAG MANAGER (global actions)
+// ============================================================
+function openTagManager() {
+  // Populate select with all unique tags across all rows
+  const allTags = [...new Set(tableData.flatMap(r => r.tags))].sort();
+  const sel = document.getElementById('tagManagerSelect');
+  sel.innerHTML = '<option value="">— Selecione uma etiqueta —</option>';
+  allTags.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t; opt.textContent = t;
+    sel.appendChild(opt);
+  });
+  document.getElementById('tagManagerInput').value = '';
+  document.getElementById('tagManagerModal').classList.add('open');
+}
+
+function closeTagManager() {
+  document.getElementById('tagManagerModal').classList.remove('open');
+}
+
+function syncTagManagerInput() {
+  const val = document.getElementById('tagManagerSelect').value;
+  if (val) document.getElementById('tagManagerInput').value = val;
+}
+
+function syncTagManagerSelect() {
+  const val = document.getElementById('tagManagerInput').value.trim();
+  const sel = document.getElementById('tagManagerSelect');
+  // Try to match an existing option
+  const match = [...sel.options].find(o => o.value.toLowerCase() === val.toLowerCase());
+  sel.value = match ? match.value : '';
+}
+
+function removeSpecificTagFromAll() {
+  const val = (document.getElementById('tagManagerInput').value || document.getElementById('tagManagerSelect').value).trim();
+  if (!val) { toast('Selecione ou digite uma etiqueta', 'error'); return; }
+  let count = 0;
+  tableData.forEach((row, i) => {
+    const before = row.tags.length;
+    row.tags = row.tags.filter(t => t.toLowerCase() !== val.toLowerCase());
+    if (row.tags.length < before) count++;
+  });
+  filteredIndices.forEach(i => refreshTagCell(i));
+  closeTagManager();
+  toast(`Etiqueta "${val}" removida de ${count} registro(s)`, count ? 'success' : 'info');
+}
+
+function clearAllTagsGlobal() {
+  if (!confirm('Tem certeza? Todas as etiquetas de todos os registros serão removidas.')) return;
+  tableData.forEach(row => { row.tags = []; });
+  filteredIndices.forEach(i => refreshTagCell(i));
+  closeTagManager();
+  toast('Todas as etiquetas foram removidas', 'success');
+}
+
+document.getElementById('tagManagerModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('tagManagerModal')) closeTagManager();
+});
+
+
+function toast(msg, type = 'info') {
+  const icons = { success: '✓', error: '✕', info: 'ℹ' };
+  const tc = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${icons[type]||'ℹ'}</span> ${msg}`;
+  tc.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity 0.3s'; setTimeout(() => el.remove(), 300); }, 3000);
+}
+
+// ============================================================
+// HELP MODAL
+// ============================================================
+function openHelp() { document.getElementById('helpModal').classList.add('open'); }
+function closeHelp() { document.getElementById('helpModal').classList.remove('open'); }
+document.getElementById('helpModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('helpModal')) closeHelp();
+});
+
+// ============================================================
+// WELCOME SCREEN
+// ============================================================
+function closeWelcome() {
+  const overlay = document.getElementById('welcomeOverlay');
+  overlay.style.opacity = '0';
+  overlay.style.transition = 'opacity 0.3s';
+  setTimeout(() => overlay.style.display = 'none', 300);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+setStep(1);
+</script>
+</body>
+</html>
